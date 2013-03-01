@@ -19,6 +19,7 @@
 
 #include "printeractivity.h"
 #include <stdio.h>
+#include "log.h"
 
 PrinterActivity::PrinterActivity(const std::string& aName): BaseActivity(aName)
 {
@@ -34,5 +35,6 @@ PrinterActivity::~PrinterActivity()
 
 void PrinterActivity::execute()
 {
-    printf("time %s\n", mName.c_str());
+    //printf("time %s\n", mName.c_str());
+    Log::DEBUG(LOC, "Test %s", mName.c_str());
 }

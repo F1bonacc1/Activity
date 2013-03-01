@@ -1,6 +1,6 @@
 project(activity)
 
-add_executable(activity printeractivity.cpp baseactivity.cpp main.cpp)
+add_executable(activity log.cpp printeractivity.cpp baseactivity.cpp main.cpp)
 
 target_link_libraries(activity boost_thread)
 
