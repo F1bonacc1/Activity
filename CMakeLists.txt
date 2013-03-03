@@ -1,7 +1,9 @@
 project(activity)
 
-add_executable(activity log.cpp printeractivity.cpp baseactivity.cpp main.cpp)
+add_subdirectory (src/)
 
-target_link_libraries(activity boost_thread)
+#add_subdirectory (include/)
 
-install(TARGETS activity RUNTIME DESTINATION bin)
+
+
+
