@@ -21,27 +21,42 @@
 #define BASEACTIVITY_H
 
 #include <string>
-#include <set>
+#include <list>
 #include <boost/thread/thread.hpp>
 
 class BaseActivity
 {
 
 public:
-    BaseActivity(const std::string& aName);
+    BaseActivity(const std::string& aName, BaseActivity* aParent);
     virtual ~BaseActivity();
 
     virtual void start();
     virtual void wait();
+    
+    virtual const char* getName();
 
 
 
 protected:
     std::string mName;
-    virtual void execute() = 0;
+    bool mAbortFlag;
+    int mActiveChildren;
+    virtual bool isStarted();
+    virtual void execute();
+    virtual void onPrepare() = 0;
+    virtual void onStart();
+    virtual void onWaitEnd();
+    virtual void onChildActivityEnd(BaseActivity* aCaller);
     boost::thread* pThread;
     BaseActivity* mParent;
-    std::set<BaseActivity*> mChildren;
+    std::list<BaseActivity*> mChildren;
+    boost::condition_variable mCondVar;
+    boost::mutex mMutex;
+    
+private:
+    bool mIsStarted;
+    BaseActivity* mLastFinishedChild;
     
 };
 

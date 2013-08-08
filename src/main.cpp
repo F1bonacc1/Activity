@@ -1,29 +1,35 @@
 #include <iostream>
 #include "baseactivity.h"
-#include "printeractivity.h"
+#include "simpleactivity.h"
+#include "simpleactivity.cpp"
 #include <stdio.h>
 #include <vector>
+#include <unistd.h>
+#include "executor.h"
 
-#define THREADS_NUM 1000
+#define THREADS_NUM 10
 
 int main(int argc, char **argv) {
 
-    char name[16];
-    std::vector<BaseActivity*> lActivities;
-    for(int i = 0; i < THREADS_NUM; ++i)
+    std::vector<int> lVars;
+    int lNumThreads = THREADS_NUM;
+    if(argc > 1)
     {
-        sprintf(name, "%s_%d", "Thread", i);
-        
-        BaseActivity* lActivity = new PrinterActivity(name);
-        lActivity->start();
-        lActivities.push_back(lActivity);
+        lNumThreads = atoi(argv[1]);
     }
-    for(int i = 0; i < THREADS_NUM; ++i)
+    for(int i = 0; i < lNumThreads; ++i)
     {
+        lVars.push_back(i);
+    }
 
-        lActivities[i]->wait();
-        delete lActivities[i];
-    }
-    //lActivity.wait();
+    Executor exec(42);
+    BaseActivity* lActivity = new SimpleActivity<int, Executor>("SimpleActivity", lVars, &exec, &Executor::PrintVar, NULL);
+    lActivity->start();
+    
+    
+    
+    lActivity->wait();
+    
+    delete lActivity;
     return 0;
 }

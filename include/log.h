@@ -20,14 +20,47 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <time.h>
+#include <sstream>
 #include <sys/time.h>
-
+#include <boost/thread.hpp>
+#include <boost/lexical_cast.hpp>
 #define LOC __FILE__, __LINE__, __FUNCTION__
+
 
 class Log
 {
 public:
-    static void DEBUG(const char * file, int line, const char * func, const char * format, ... )
+    static void DEBUG(const char * file, int line, const char * func, const char * format, ...)
+    {
+        va_list args;
+        va_start (args, format);
+        PrintLog("DEBUG", file, line, func, format, args);
+        va_end (args);
+    }
+    static void ERROR(const char * file, int line, const char * func, const char * format, ...)
+    {
+        va_list args;
+        va_start (args, format);
+        PrintLog("ERROR", file, line, func, format, args);
+        va_end (args);
+    }
+    static void WARN(const char * file, int line, const char * func, const char * format, ...)
+    {
+        va_list args;
+        va_start (args, format);
+        PrintLog("WARN", file, line, func, format, args);
+        va_end (args);
+    }
+    static void INFO(const char * file, int line, const char * func, const char * format, ...)
+    {
+        va_list args;
+        va_start (args, format);
+        PrintLog("INFO", file, line, func, format, args);
+        va_end (args);
+    }
+
+private:
+    static void PrintLog(const char * mode, const char * file, int line, const char * func, const char * format, va_list args )
     {
         //handle time up to secs
         time_t rawtime;
@@ -41,13 +74,19 @@ public:
         struct timeval lTv;
         gettimeofday(&lTv, NULL);
 
-        char buffer[256];
-        va_list args;
-        va_start (args, format);
+        char buffer[512];
+
         vsprintf (buffer,format, args);
-        printf ("%s.%04ld | DEBUG | %s : %d \t\t| %s \t| %s\n",timebuf, lTv.tv_usec / 100 ,file, line , func, buffer);
+        printf ("%s.%04ld | [%s] | %s : %d \t| %ld \t | %s \t| %s\n",timebuf, lTv.tv_usec / 100 , mode, file, line , getThreadId(), func, buffer);
         
-        va_end (args);
+
+    }
+    
+    static unsigned long getThreadId(){
+        std::string threadId = boost::lexical_cast<std::string>(boost::this_thread::get_id());
+        unsigned long threadNumber = 0;
+        sscanf(threadId.c_str(), "%lx", &threadNumber);
+        return threadNumber;
     }
 };
 
