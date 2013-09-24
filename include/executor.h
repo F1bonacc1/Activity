@@ -20,7 +20,20 @@
 
 #ifndef EXECUTOR_H
 #define EXECUTOR_H
+#include <vector>
+#include <ostream>
 
+struct SimpActParams{
+    int mResourceId;
+    std::vector<int> *mIncomingInt;
+    std::vector<int> *mOutgoingInt;
+
+    std::ostream& operator<<(std::ostream& os)
+    {
+      os << mResourceId;
+      return os;
+    }
+};
 
 class Executor
 {
@@ -30,7 +43,9 @@ public:
     ~Executor();
     
 
-    bool PrintVar(int var);
+    bool PrintVar(SimpActParams var);
+    
+    bool Recovery();
 
 private:
     int m;

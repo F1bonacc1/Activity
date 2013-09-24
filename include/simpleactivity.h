@@ -23,6 +23,8 @@
 #include "executor.h"
 #include <vector>
 
+
+
 template<class A1, class E>
 //template<class A1, class A2, class A3, class A4, class A5, class E>
 class SimpleActivity:public BaseActivity
@@ -30,19 +32,22 @@ class SimpleActivity:public BaseActivity
 public:
     
     typedef bool (E::*pfcn)(A1);
+    typedef bool (E::*recfcn)();
     //typedef bool (E::*pfcn2)(A1, A2);
-    SimpleActivity(const std::string& aName, std::vector< A1 >& aVars, E* aExecutor, pfcn aFunc, BaseActivity* aParent);
+    SimpleActivity(const std::string& aName, std::vector< A1 >& aVars, E* aExecutor, pfcn aFunc, recfcn aRecFunc, BaseActivity* aParent);
     /*SimpleActivity(const std::string& aName, std::vector< A1 >& aVars, E* aExecutor, pfcn aFunc, BaseActivity* aParent);
     SimpleActivity(const std::string& aName, std::vector< A1 >& aVars, E* aExecutor, pfcn aFunc, BaseActivity* aParent);
     SimpleActivity(const std::string& aName, std::vector< A1 >& aVars, E* aExecutor, pfcn aFunc, BaseActivity* aParent);*/
     virtual ~SimpleActivity();
-
+    
     virtual void onPrepare();
     virtual void onStart();
+    virtual void onRecovery();
     
 private:
     std::vector<A1> mVars;
     pfcn mFctn;
+    recfcn mRecFunc;
     E* mExecutor;
 };
 

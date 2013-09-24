@@ -27,11 +27,13 @@ SimpleActivity<A1, E>::SimpleActivity(const std::string& aName,
                                        std::vector< A1 >& aVars,
                                        E* aExecutor,
                                        pfcn aFunc,
+                                       recfcn aRecFunc,
                                        BaseActivity* aParent):
                                        BaseActivity(aName, aParent)
 {
     mVars     = aVars;
     mFctn     = aFunc;
+    mRecFunc  = aRecFunc;
     mExecutor = aExecutor;
 }
 
@@ -52,9 +54,9 @@ void SimpleActivity<A1, E>::onPrepare()
             std::vector<A1> lVars;
             lVars.push_back(mVars[i]);
             std::ostringstream ost;
-            ost << getName() << "_" << mVars[i];
+            ost << getName() << "_" << i;
 
-            mChildren.push_back(new SimpleActivity(ost.str(), lVars, mExecutor, mFctn, this));
+            mChildren.push_back(new SimpleActivity(ost.str(), lVars, mExecutor, mFctn, mRecFunc, this));
         }
     }
 }
@@ -73,5 +75,18 @@ void SimpleActivity<A1, E>::onStart()
         //boost::this_thread::sleep(boost::posix_time::milliseconds(500));
         //Log::DEBUG(LOC, "Test %s - %d", mName.c_str(), 500);
         (mExecutor->*mFctn)(mVars[0]);
+    }
+}
+
+template <class A1, class E>
+void SimpleActivity<A1, E>::onRecovery()
+{
+    if(mVars.size() == 1)
+    {
+        //printf("time %s\n", mName.c_str());
+
+        //boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+        //Log::DEBUG(LOC, "Test %s - %d", mName.c_str(), 500);
+        (mExecutor->*mRecFunc)();
     }
 }
