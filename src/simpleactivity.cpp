@@ -24,14 +24,27 @@
 
 template <class A1, class E>
 SimpleActivity<A1, E>::SimpleActivity(const std::string& aName,
-                                       std::vector< A1 >& aVars,
+                                       std::vector< A1* >& aVars,
                                        E* aExecutor,
                                        pfcn aFunc,
                                        recfcn aRecFunc,
                                        BaseActivity* aParent):
                                        BaseActivity(aName, aParent)
 {
-    mVars     = aVars;
+    mVar = NULL;
+    onPrepare(aVars, aExecutor, aFunc, aRecFunc);
+}
+
+template <class A1, class E>
+SimpleActivity<A1, E>::SimpleActivity(const std::string& aName,
+                                      A1* aVar,
+                                      E* aExecutor,
+                                      pfcn aFunc,
+                                      recfcn aRecFunc,
+                                      BaseActivity* aParent):
+                                      BaseActivity(aName, aParent)
+{
+    mVar      = aVar;
     mFctn     = aFunc;
     mRecFunc  = aRecFunc;
     mExecutor = aExecutor;
@@ -45,18 +58,16 @@ SimpleActivity<A1, E>::~SimpleActivity()
 }
 
 template <class A1, class E>
-void SimpleActivity<A1, E>::onPrepare()
+void SimpleActivity<A1, E>::onPrepare(std::vector<A1 *> &aVars, E *aExecutor, pfcn aFunc, recfcn aRecFunc)
 {
-    if(mVars.size() > 1)
+    if(aVars.size() > 1)
     {
-        for(size_t i = 0; i < mVars.size(); ++i)
+        for(size_t i = 0; i < aVars.size(); ++i)
         {
-            std::vector<A1> lVars;
-            lVars.push_back(mVars[i]);
             std::ostringstream ost;
             ost << getName() << "_" << i;
 
-            mChildren.push_back(new SimpleActivity(ost.str(), lVars, mExecutor, mFctn, mRecFunc, this));
+            mChildren.push_back(new SimpleActivity(ost.str(), aVars[i], aExecutor, aFunc, aRecFunc, this));
         }
     }
 }
@@ -64,29 +75,30 @@ void SimpleActivity<A1, E>::onPrepare()
 template <class A1, class E>
 void SimpleActivity<A1, E>::onStart()
 {
-    if(mVars.size() > 1)
+    if(mChildren.size() > 1)
     {
         BaseActivity::onStart();
     }
-    else if(mVars.size() == 1)
+    else if(mVar)
     {
         //printf("time %s\n", mName.c_str());
 
         //boost::this_thread::sleep(boost::posix_time::milliseconds(500));
         //Log::DEBUG(LOC, "Test %s - %d", mName.c_str(), 500);
-        (mExecutor->*mFctn)(mVars[0]);
+        (mExecutor->*mFctn)(mVar);
     }
 }
 
 template <class A1, class E>
-void SimpleActivity<A1, E>::onRecovery()
+bool SimpleActivity<A1, E>::onRecovery()
 {
-    if(mVars.size() == 1)
+    if(mVar)
     {
         //printf("time %s\n", mName.c_str());
 
         //boost::this_thread::sleep(boost::posix_time::milliseconds(500));
         //Log::DEBUG(LOC, "Test %s - %d", mName.c_str(), 500);
-        (mExecutor->*mRecFunc)();
+        return (mExecutor->*mRecFunc)();
     }
+    return false;
 }

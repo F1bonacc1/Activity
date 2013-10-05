@@ -43,7 +43,7 @@ public:
     ~Executor();
     
 
-    bool PrintVar(SimpActParams var);
+    bool PrintVar(SimpActParams *var);
     
     bool Recovery();
 

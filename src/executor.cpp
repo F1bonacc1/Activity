@@ -31,9 +31,9 @@ Executor::~Executor()
 
 }
 
-bool Executor::PrintVar(SimpActParams var)
+bool Executor::PrintVar(SimpActParams* var)
 {
-    Log::DEBUG(LOC, "PrintVar - %d, %d", var.mResourceId, m);
+    Log::DEBUG(LOC, "PrintVar - %d, %d", var->mResourceId, m);
     return true;
 }
 

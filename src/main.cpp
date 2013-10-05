@@ -12,7 +12,7 @@
 int main(int argc, char **argv) {
 
     std::vector<int> lVars0, lVars1;
-    std::vector<struct SimpActParams> lVecParams;
+    std::vector<SimpActParams* > lVecParams;
     int lNumThreads = THREADS_NUM;
     if(argc > 1)
     {
@@ -36,8 +36,8 @@ int main(int argc, char **argv) {
     lParams1.mIncomingInt = &lVars1;
     lParams1.mResourceId = 2;
 
-    lVecParams.push_back(lParams0);
-    lVecParams.push_back(lParams1);
+    lVecParams.push_back( &lParams0 );
+    lVecParams.push_back( &lParams1 );
 
     Executor exec(42);
     BaseActivity* lActivity = new SimpleActivity<SimpActParams, Executor>("SimpleActivity", lVecParams, &exec, &Executor::PrintVar, &Executor::Recovery, NULL);

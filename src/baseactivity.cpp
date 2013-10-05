@@ -84,7 +84,7 @@ void BaseActivity::execute()
         //TODO Observer Start
         Log::DEBUG(LOC, "Activity %s START", getName());
 
-        onPrepare();
+        //onPrepare();
         onStart();
     }
     onWaitEnd();

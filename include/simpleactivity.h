@@ -31,21 +31,21 @@ class SimpleActivity:public BaseActivity
 {
 public:
     
-    typedef bool (E::*pfcn)(A1);
+    typedef bool (E::*pfcn)(A1*);
     typedef bool (E::*recfcn)();
-    //typedef bool (E::*pfcn2)(A1, A2);
-    SimpleActivity(const std::string& aName, std::vector< A1 >& aVars, E* aExecutor, pfcn aFunc, recfcn aRecFunc, BaseActivity* aParent);
-    /*SimpleActivity(const std::string& aName, std::vector< A1 >& aVars, E* aExecutor, pfcn aFunc, BaseActivity* aParent);
-    SimpleActivity(const std::string& aName, std::vector< A1 >& aVars, E* aExecutor, pfcn aFunc, BaseActivity* aParent);
-    SimpleActivity(const std::string& aName, std::vector< A1 >& aVars, E* aExecutor, pfcn aFunc, BaseActivity* aParent);*/
+
+    SimpleActivity(const std::string& aName, std::vector< A1* >& aVars, E* aExecutor, pfcn aFunc, recfcn aRecFunc, BaseActivity* aParent);
+    SimpleActivity(const std::string& aName, A1* aVar,                  E* aExecutor, pfcn aFunc, recfcn aRecFunc, BaseActivity* aParent);
+
     virtual ~SimpleActivity();
     
-    virtual void onPrepare();
+    virtual void onPrepare(std::vector< A1* >& aVars, E* aExecutor, pfcn aFunc, recfcn aRecFunc);
     virtual void onStart();
-    virtual void onRecovery();
+    virtual bool onRecovery();
     
 private:
-    std::vector<A1> mVars;
+    std::vector< A1* > mVars;
+    A1* mVar;
     pfcn mFctn;
     recfcn mRecFunc;
     E* mExecutor;

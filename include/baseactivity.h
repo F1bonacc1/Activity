@@ -44,10 +44,12 @@ protected:
     int mActiveChildren;
     virtual bool isStarted();
     virtual void execute();
-    virtual void onPrepare() = 0;
+    //virtual void onPrepare() = 0;
+    virtual bool onRecovery() = 0;
     virtual void onStart();
     virtual void onWaitEnd();
     virtual void onChildActivityEnd(BaseActivity* aCaller);
+    //virtual void startRecovery(BaseActivity* aRecoveree);
     boost::thread* pThread;
     BaseActivity* mParent;
     std::list<BaseActivity*> mChildren;
