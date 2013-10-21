@@ -22,83 +22,71 @@
 #include "log.h"
 #include "sstream"
 
-template <class A1, class E>
-SimpleActivity<A1, E>::SimpleActivity(const std::string& aName,
-                                       std::vector< A1* >& aVars,
-                                       E* aExecutor,
-                                       pfcn aFunc,
-                                       recfcn aRecFunc,
+
+SimpleActivity::SimpleActivity(const std::string& aName,
+                                       std::vector< boost::function<bool(void)> >& aFuncs,
+                                       std::vector< boost::function<bool(void)> >& aRecFuncs,
                                        BaseActivity* aParent):
                                        BaseActivity(aName, aParent)
 {
-    mVar = NULL;
-    onPrepare(aVars, aExecutor, aFunc, aRecFunc);
+
+    onPrepare(aFuncs, aRecFuncs);
 }
 
-template <class A1, class E>
-SimpleActivity<A1, E>::SimpleActivity(const std::string& aName,
-                                      A1* aVar,
-                                      E* aExecutor,
-                                      pfcn aFunc,
-                                      recfcn aRecFunc,
+
+SimpleActivity::SimpleActivity(const std::string& aName,
+                                      boost::function<bool(void)>& aFunc,
+                                      boost::function<bool(void)>& aRecFunc,
                                       BaseActivity* aParent):
                                       BaseActivity(aName, aParent)
 {
-    mVar      = aVar;
-    mFctn     = aFunc;
-    mRecFunc  = aRecFunc;
-    mExecutor = aExecutor;
+    mFunction     = aFunc;
+    mRecoveryFunction  = aRecFunc;
 }
 
 
-template <class A1, class E>
-SimpleActivity<A1, E>::~SimpleActivity()
+
+SimpleActivity::~SimpleActivity()
 {
 
 }
 
-template <class A1, class E>
-void SimpleActivity<A1, E>::onPrepare(std::vector<A1 *> &aVars, E *aExecutor, pfcn aFunc, recfcn aRecFunc)
+
+void SimpleActivity::onPrepare(std::vector<boost::function<bool(void)> >& aFuncs, std::vector<boost::function<bool(void)> >& aRecFuncs)
 {
-    if(aVars.size() > 1)
+    if(aFuncs.size() > 1)
     {
-        for(size_t i = 0; i < aVars.size(); ++i)
+        for(size_t i = 0; i < aFuncs.size(); ++i)
         {
             std::ostringstream ost;
             ost << getName() << "_" << i;
 
-            mChildren.push_back(new SimpleActivity(ost.str(), aVars[i], aExecutor, aFunc, aRecFunc, this));
+            mChildren.push_back(new SimpleActivity(ost.str(), aFuncs[i], aRecFuncs[i], this));
         }
     }
 }
 
-template <class A1, class E>
-void SimpleActivity<A1, E>::onStart()
+
+void SimpleActivity::onStart()
 {
     if(mChildren.size() > 1)
     {
         BaseActivity::onStart();
     }
-    else if(mVar)
+    else
     {
-        //printf("time %s\n", mName.c_str());
-
-        //boost::this_thread::sleep(boost::posix_time::milliseconds(500));
-        //Log::DEBUG(LOC, "Test %s - %d", mName.c_str(), 500);
-        (mExecutor->*mFctn)(mVar);
+        mFunction();
     }
 }
 
-template <class A1, class E>
-bool SimpleActivity<A1, E>::onRecovery()
-{
-    if(mVar)
-    {
-        //printf("time %s\n", mName.c_str());
 
-        //boost::this_thread::sleep(boost::posix_time::milliseconds(500));
-        //Log::DEBUG(LOC, "Test %s - %d", mName.c_str(), 500);
-        return (mExecutor->*mRecFunc)();
-    }
-    return false;
+bool SimpleActivity::onRecovery()
+{
+
+    //printf("time %s\n", mName.c_str());
+
+    //boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+    //Log::DEBUG(LOC, "Test %s - %d", mName.c_str(), 500);
+    return mRecoveryFunction();
+
 }

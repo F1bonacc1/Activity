@@ -77,7 +77,7 @@ private:
         char buffer[512];
 
         vsprintf (buffer,format, args);
-        printf ("%s.%04ld | [%s] | %s : %d \t| %ld \t | %s \t| %s\n",timebuf, lTv.tv_usec / 100 , mode, file, line , getThreadId(), func, buffer);
+        printf ("%s.%04ld | [%s] | %s +%d \t| %ld \t | %s \t| %s\n",timebuf, lTv.tv_usec / 100 , mode, file, line , getThreadId(), func, buffer);
         
 
     }

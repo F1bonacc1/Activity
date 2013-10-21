@@ -22,33 +22,28 @@
 #include "baseactivity.h"
 #include "executor.h"
 #include <vector>
+#include "boost/function.hpp"
+#include "boost/bind.hpp"
 
 
-
-template<class A1, class E>
-//template<class A1, class A2, class A3, class A4, class A5, class E>
 class SimpleActivity:public BaseActivity
 {
 public:
-    
-    typedef bool (E::*pfcn)(A1*);
-    typedef bool (E::*recfcn)();
 
-    SimpleActivity(const std::string& aName, std::vector< A1* >& aVars, E* aExecutor, pfcn aFunc, recfcn aRecFunc, BaseActivity* aParent);
-    SimpleActivity(const std::string& aName, A1* aVar,                  E* aExecutor, pfcn aFunc, recfcn aRecFunc, BaseActivity* aParent);
+    SimpleActivity(const std::string& aName, std::vector< boost::function<bool(void)> >& aFuncs,
+                   std::vector< boost::function<bool(void)> >& aRecFuncs, BaseActivity* aParent);
+    SimpleActivity(const std::string& aName, boost::function<bool(void)> &aFunc, boost::function<bool(void)> &aRecFunc, BaseActivity* aParent);
 
     virtual ~SimpleActivity();
     
-    virtual void onPrepare(std::vector< A1* >& aVars, E* aExecutor, pfcn aFunc, recfcn aRecFunc);
+    virtual void onPrepare(std::vector<boost::function<bool(void)> >& aFuncs, std::vector<boost::function<bool(void)> >& aRecFuncs);
     virtual void onStart();
     virtual bool onRecovery();
     
 private:
-    std::vector< A1* > mVars;
-    A1* mVar;
-    pfcn mFctn;
-    recfcn mRecFunc;
-    E* mExecutor;
+
+    boost::function<bool(void)> mFunction;
+    boost::function<bool(void)> mRecoveryFunction;
 };
 
 #endif // SIMPLEACTIVITY_H

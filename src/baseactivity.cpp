@@ -19,7 +19,7 @@
 
 #include "baseactivity.h"
 #include "log.h"
-#include <boost/bind.hpp>
+
 
 
 BaseActivity::BaseActivity(const std::string& aName, BaseActivity* aParent)
