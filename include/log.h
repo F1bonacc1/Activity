@@ -48,14 +48,14 @@ public:
     {
         va_list args;
         va_start (args, format);
-        PrintLog("WARN", file, line, func, format, args);
+        PrintLog("WARN ", file, line, func, format, args);
         va_end (args);
     }
     static void INFO(const char * file, int line, const char * func, const char * format, ...)
     {
         va_list args;
         va_start (args, format);
-        PrintLog("INFO", file, line, func, format, args);
+        PrintLog("INFO ", file, line, func, format, args);
         va_end (args);
     }
 

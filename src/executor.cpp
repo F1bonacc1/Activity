@@ -31,17 +31,31 @@ Executor::~Executor()
 
 }
 
-bool Executor::PrintVar(int aVal, int &aToChange)
+bool Executor::PrintVar(int a, int b, int &aToChange)
 {
-    Log::DEBUG(LOC, "PrintVar - %d, %d", aVal, m);
-    aToChange++;
-    return true;
+    Log::DEBUG(LOC, "PrintVar - %d, %d", a, m);
+    int ans = 0;
+
+    for(int i = 1; i < 10000000; i++)
+    {
+        ans += i / b + a;
+
+        if(ans % 2 == 0) ans--;
+        else ans /= 2;
+    }
+
+    aToChange = ans;
+    if(a % 3)
+        return true;
+    else
+        return false;
 }
 
 
-bool Executor::Recovery()
+bool Executor::Recovery(int &aToChange)
 {
     Log::DEBUG(LOC, "Recovery - %d", m);
+    aToChange = m;
     return true;
 }
 

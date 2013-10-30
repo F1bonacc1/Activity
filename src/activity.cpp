@@ -17,82 +17,98 @@
 */
 
 
-#include "baseactivity.h"
+#include "activity.h"
 #include "log.h"
 
 
 
-BaseActivity::BaseActivity(const std::string& aName, BaseActivity* aParent)
+Activity::Activity(const std::string& aName, Activity* aParent)
 {
     mName           = aName;
     pThread         = NULL;
     mParent         = aParent;
-    mAbortFlag      = false;
     mActiveChildren = 0;
+    mRetryCount     = 1;
     mIsStarted      = false;
+    mIsRecoverable  = false;
 }
 
-BaseActivity::~BaseActivity()
+Activity::~Activity()
 {
-    std::list<BaseActivity*>::iterator iter = mChildren.begin();
+    std::list<Activity*>::iterator iter = mChildren.begin();
     for(; iter != mChildren.end(); ++iter)
     {
         (*iter)->wait();
         delete *iter;
     }
+    SetStatus(ActivityEventHandler::DESTROYED);
 }
 
-const char* BaseActivity::getName()
+const char* Activity::getName()
 {
     return mName.c_str();
 }
 
-void BaseActivity::onStart()
+bool Activity::onStart()
 {
     mActiveChildren = mChildren.size();
-    std::list<BaseActivity*>::iterator iter = mChildren.begin();
+    std::list<Activity*>::iterator iter = mChildren.begin();
     for(; iter != mChildren.end(); ++iter)
     {
         (*iter)->start();
     }
+    return true;
 }
 
-bool BaseActivity::isStarted()
+bool Activity::isStarted()
 {
     return mIsStarted;
 }
 
-void BaseActivity::start()
+void Activity::start()
 {
     mIsStarted = true;
-    pThread = new boost::thread(&BaseActivity::execute, this);
+    pThread = new boost::thread(&Activity::execute, this);
 }
 
-void BaseActivity::wait()
+void Activity::wait()
 {
     if(pThread)
     {
+        Log::DEBUG(LOC,"Waiting for %s finish...", getName());
         pThread->join();
         delete pThread;
+        pThread = NULL;
     }
 }
 
-void BaseActivity::execute()
+void Activity::execute()
 {
-    if(!mAbortFlag)
-    {
-        //TODO Observer Start
-        Log::DEBUG(LOC, "Activity %s START", getName());
+    //TODO Observer Start
+    bool rc = false;
 
-        //onPrepare();
-        onStart();
+    for (int i = 0; i < mRetryCount; ++i)
+    {
+        SetStatus(ActivityEventHandler::RUNNING);
+        rc = onStart();
+
+        if(!rc && IsRecoverable())
+        {
+            SetStatus(ActivityEventHandler::RECOVERING);
+            rc = onRecovery();
+        }
+        else
+        {
+            break;
+        }
     }
-    onWaitEnd();
-    Log::DEBUG(LOC, "Activity %s END", getName());
+    SetStatus(rc ? ActivityEventHandler::DONE_OK : ActivityEventHandler::DONE_FAIL);
+    onEnd();
     //TODO Observer End
 }
 
-void BaseActivity::onWaitEnd()
+
+void Activity::onEnd()
 {
     if(!mChildren.empty())
     {
@@ -104,16 +120,6 @@ void BaseActivity::onWaitEnd()
         }
 
         Log::DEBUG(LOC,"All the children of %s finished", getName());
-
-        /*for (std::list<BaseActivity*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
-        {
-            if((*it)->isStarted())
-            {
-                Log::DEBUG(LOC,"Waiting for %s to end", (*it)->getName());
-                (*it)->wait();
-                Log::DEBUG(LOC,"%s ended", (*it)->getName());
-            }
-        }*/
     }
     if(mParent)
     {
@@ -122,7 +128,7 @@ void BaseActivity::onWaitEnd()
 }
 
 
-void BaseActivity::onChildActivityEnd(BaseActivity* aCaller)
+void Activity::onChildActivityEnd(Activity* aCaller)
 {
     {
         boost::lock_guard<boost::mutex> lock(mMutex);
@@ -135,3 +141,32 @@ void BaseActivity::onChildActivityEnd(BaseActivity* aCaller)
 }
 
 
+bool Activity::IsRecoverable()
+{
+    return mIsRecoverable;
+}
+
+
+ActivityEventHandler::ActivityStatus Activity::GetStatus() const
+{
+    return mStatus;
+}
+
+
+void Activity::SetStatus(ActivityEventHandler::ActivityStatus aStatus)
+{
+    mStatus = aStatus;
+    ActivityEventHandler::SetStatus(getName(), aStatus);
+}
+
+
+void Activity::setRetryCount(int aCount)
+{
+    mRetryCount = aCount;
+    if(mRetryCount < 1) mRetryCount = 1;
+    std::list<Activity*>::iterator iter = mChildren.begin();
+    for(; iter != mChildren.end(); ++iter)
+    {
+        (*iter)->setRetryCount(mRetryCount);
+    }
+}

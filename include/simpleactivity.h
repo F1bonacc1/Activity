@@ -19,25 +19,40 @@
 
 #ifndef SIMPLEACTIVITY_H
 #define SIMPLEACTIVITY_H
-#include "baseactivity.h"
+#include "activity.h"
 #include "executor.h"
 #include <vector>
 #include "boost/function.hpp"
 #include "boost/bind.hpp"
 
 
-class SimpleActivity:public BaseActivity
+class SimpleActivity:public Activity
 {
 public:
 
-    SimpleActivity(const std::string& aName, std::vector< boost::function<bool(void)> >& aFuncs,
-                   std::vector< boost::function<bool(void)> >& aRecFuncs, BaseActivity* aParent);
-    SimpleActivity(const std::string& aName, boost::function<bool(void)> &aFunc, boost::function<bool(void)> &aRecFunc, BaseActivity* aParent);
+    SimpleActivity(const std::string& aName,
+                   std::vector< boost::function<bool(void)> >& aFuncs,
+                   std::vector< boost::function<bool(void)> >& aRecFuncs,
+                   Activity* aParent);
+
+    SimpleActivity(const std::string& aName,
+                   std::vector< boost::function<bool(void)> >& aFuncs,
+                   Activity* aParent);
+
+    SimpleActivity(const std::string& aName,
+                   boost::function<bool(void)> &aFunc,
+                   boost::function<bool(void)> &aRecFunc,
+                   Activity* aParent);
+
+    SimpleActivity(const std::string& aName,
+                   boost::function<bool(void)> &aFunc,
+                   Activity* aParent);
 
     virtual ~SimpleActivity();
     
     virtual void onPrepare(std::vector<boost::function<bool(void)> >& aFuncs, std::vector<boost::function<bool(void)> >& aRecFuncs);
-    virtual void onStart();
+    virtual void onPrepare(std::vector<boost::function<bool(void)> >& aFuncs);
+    virtual bool onStart();
     virtual bool onRecovery();
     
 private:

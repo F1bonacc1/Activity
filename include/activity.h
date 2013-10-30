@@ -17,26 +17,34 @@
 */
 
 
-#ifndef BASEACTIVITY_H
-#define BASEACTIVITY_H
+#ifndef ACTIVITY_H
+#define ACTIVITY_H
 
 #include <string>
 #include <list>
 #include <boost/thread/thread.hpp>
+#include "activityeventhandler.h"
 
-class BaseActivity
+class Activity
 {
 
 public:
-    BaseActivity(const std::string& aName, BaseActivity* aParent);
-    virtual ~BaseActivity();
+    Activity(const std::string& aName, Activity* aParent);
+    virtual ~Activity();
 
     virtual void start();
+
     virtual void wait();
     
     virtual const char* getName();
 
+    virtual bool IsRecoverable();
+    void SetStatus(ActivityEventHandler::ActivityStatus aStatus);
 
+    ActivityEventHandler::ActivityStatus GetStatus() const;
+
+
+    virtual void setRetryCount(int aCount);
 
 protected:
     std::string mName;
@@ -44,22 +52,23 @@ protected:
     int mActiveChildren;
     virtual bool isStarted();
     virtual void execute();
-    //virtual void onPrepare() = 0;
+    virtual bool onStart();
+    virtual void onEnd();
+    virtual void onChildActivityEnd(Activity* aCaller);
+
     virtual bool onRecovery() = 0;
-    virtual void onStart();
-    virtual void onWaitEnd();
-    virtual void onChildActivityEnd(BaseActivity* aCaller);
-    //virtual void startRecovery(BaseActivity* aRecoveree);
+
     boost::thread* pThread;
-    BaseActivity* mParent;
-    std::list<BaseActivity*> mChildren;
+    Activity* mParent;
+    std::list<Activity*> mChildren;
     boost::condition_variable mCondVar;
     boost::mutex mMutex;
-    
+    bool mIsRecoverable;
+
 private:
     bool mIsStarted;
-    BaseActivity* mLastFinishedChild;
-    
+    int mRetryCount;
+    ActivityEventHandler::ActivityStatus mStatus;
 };
 
-#endif // BASEACTIVITY_H
+#endif // ACTIVITY_H

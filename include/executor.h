@@ -23,18 +23,6 @@
 #include <vector>
 #include <ostream>
 
-struct SimpActParams{
-    int mResourceId;
-    std::vector<int> *mIncomingInt;
-    std::vector<int> *mOutgoingInt;
-
-    std::ostream& operator<<(std::ostream& os)
-    {
-      os << mResourceId;
-      return os;
-    }
-};
-
 class Executor
 {
 public:
@@ -43,9 +31,9 @@ public:
     ~Executor();
     
 
-    bool PrintVar(int aVal, int &aToChange);
+    bool PrintVar(int a, int b, int &aToChange);
     
-    bool Recovery();
+    bool Recovery(int &aToChange);
 
 private:
     int m;
